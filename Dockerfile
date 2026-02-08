@@ -1,25 +1,34 @@
 # api/Dockerfile
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Définir le répertoire de travail
+# Installer les dépendances système minimales
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /api
 
-# Copier requirements d'abord (optimisation cache Docker)
+# Copier requirements
 COPY requirements.txt .
 
-# Installer les dépendances
-RUN pip install --no-cache-dir -r requirements.txt
+# Installer les dépendances Python
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copier le code de l'application
+# Copier le code
 COPY main.py .
 
-# Exposer le port
-EXPOSE 8000
+# Créer un utilisateur non-root pour sécurité
+RUN useradd -m -u 1000 railway && chown -R railway:railway /app
+USER railway
 
-# Variable d'environnement pour Railway
+# Configuration
+EXPOSE 8000
 ENV PORT=8000
 ENV PYTHONUNBUFFERED=1
 ENV TF_CPP_MIN_LOG_LEVEL=3
+ENV CUDA_VISIBLE_DEVICES=-1
 
-# Commande de démarrage
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
+# Commande
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT} --log-level warning"]

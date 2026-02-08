@@ -10,7 +10,9 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Désactiver GPU
 os.environ['OMP_NUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
-
+import sys
+print(f"🐍 Python version: {sys.version}")
+print(f"📦 scikit-learn version: {sklearn.__version__}")
 import numpy as np
 import joblib
 import logging
